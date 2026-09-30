@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AA変換ジェネレーター</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f2f2f7;color:#111;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
+main{max-width:720px;margin:auto;padding:20px 16px 40px}
+h1{font-size:23px;margin:0 0 16px}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px}
+textarea{display:block;width:100%;min-height:72px;border:1px solid #ccc;border-radius:12px;padding:12px;font-size:20px;resize:vertical}
+button{border:0;border-radius:12px;padding:12px 16px;font-size:16px;font-weight:700;background:#111;color:#fff}
+button.secondary{background:#e5e5ea;color:#111}
+.buttons{display:flex;gap:8px;margin-top:10px}
+.preview{margin-top:12px;padding:16px 8px;background:#f8f8f8;border-radius:12px;overflow-x:auto}
+pre{margin:0;font-family:monospace;font-size:17px;line-height:1.5;white-space:pre}
+label{display:block;font-weight:700;margin-bottom:8px}
+input[type=range]{width:100%}
+.info{font-size:13px;color:#666;margin-top:10px}
+</style>
+</head>
+<body>
+<main>
+<h1>＿人人人人＿ AA変換ジェネレーター</h1>
+
+<div class="card">
+<label for="input">文字列</label>
+<textarea id="input" placeholder="例：ドパガキ">ドパガキ</textarea>
+<div class="buttons">
+<button id="copy" type="button">AAをコピー</button>
+<button id="clear" class="secondary" type="button">クリア</button>
+</div>
+</div>
+
+<div class="card">
+<label for="padding">左右の余白</label>
+<input id="padding" type="range" min="0" max="5" value="2">
+<div class="info">入力文字は1文字ずつ全角スペースで区切ります。</div>
+</div>
+
+<div class="card">
+<label>プレビュー</label>
+<div class="preview"><pre id="preview"></pre></div>
+</div>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+var input=document.getElementById("input");
+var preview=document.getElementById("preview");
+var padding=document.getElementById("padding");
+var copyButton=document.getElementById("copy");
+var clearButton=document.getElementById("clear");
+
+function makeAA(){
+  var raw=input.value.replace(/[\r\n]/g,"").trim();
+
+  if(!raw){
+    preview.textContent="＿人人人人＿\n＞　　　　＜\n￣^Y^Y^Y^Y￣";
+    return;
+  }
+
+  var chars=Array.from(raw);
+  var body=chars.join("　");
+  var side="　".repeat(Number(padding.value));
+
+  var middle="＞"+side+body+side+"＜";
+
+  /*
+   * 日本語の全角文字を2幅、ASCIIを1幅として近似。
+   * 上下は中央行の幅に最も近い組み合わせを探索。
+   */
+  function w(s){
+    var n=0;
+    for(var c of Array.from(s)){
+      var cp=c.codePointAt(0);
+      n += (cp<=0x7e || (cp>=0xff61 && cp<=0xff9f)) ? 1 : 2;
+    }
+    return n;
+  }
+
+  var target=w(middle);
+  var bestTop="＿人人＿",bestBottom="￣^Y^Y￣",best=Infinity;
+
+  for(var h=1;h<=30;h++){
+    var top="＿"+"人".repeat(h)+"＿";
+    for(var y=1;y<=30;y++){
+      var bottom="￣"+"^Y".repeat(y)+"￣";
+      var score=Math.abs(w(top)-target)+Math.abs(w(bottom)-target);
+      if(score<best){
+        best=score;
+        bestTop=top;
+        bestBottom=bottom;
+      }
+    }
+  }
+
+  preview.textContent=bestTop+"\n"+middle+"\n"+bestBottom;
+}
+
+input.addEventListener("input",makeAA);
+padding.addEventListener("input",makeAA);
+
+clearButton.addEventListener("click",function(){
+  input.value="";
+  makeAA();
+  input.focus();
+});
+
+copyButton.addEventListener("click",function(){
+  var text=preview.textContent;
+
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(function(){
+      copyButton.textContent="コピーしました ✓";
+      setTimeout(function(){copyButton.textContent="AAをコピー";},1200);
+    }).catch(fallbackCopy);
+  }else{
+    fallbackCopy();
+  }
+
+  function fallbackCopy(){
+    var area=document.createElement("textarea");
+    area.value=text;
+    area.style.position="fixed";
+    area.style.left="-9999px";
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+    try{
+      document.execCommand("copy");
+      copyButton.textContent="コピーしました ✓";
+    }catch(e){
+      copyButton.textContent="長押ししてコピー";
+      area.style.position="static";
+      area.style.left="";
+      area.style.width="100%";
+      area.style.height="120px";
+      area.style.marginTop="10px";
+      document.querySelector(".buttons").appendChild(area);
+    }
+    setTimeout(function(){copyButton.textContent="AAをコピー";},1200);
+    setTimeout(function(){if(area.parentNode)area.parentNode.removeChild(area);},2500);
+  }
+});
+
+makeAA();
+})();
+</script>
+</body>
+</html>
