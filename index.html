@@ -31,7 +31,7 @@ select{width:100%;background:#0f0f14;color:var(--text);border:1px solid var(--li
 .preview-wrap{position:relative;background:#09090d;border:1px solid var(--line);border-radius:14px;padding:18px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 pre{margin:0;display:inline-block;width:max-content;min-width:auto;text-align:left;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","SF Pro Text","Helvetica Neue",sans-serif;font-size:clamp(14px,4.3vw,21px);line-height:1.45;letter-spacing:0;white-space:pre;color:#fff;-webkit-font-smoothing:antialiased}
 .aa-line{display:block;width:fit-content;white-space:pre}
-.guide-line{position:absolute;top:0;bottom:0;width:1px;border-left:1.5px dashed #ff453a;pointer-events:none;display:none;z-index:2}
+.guide-line{position:absolute;width:0;border-left:2px dashed #ff453a;pointer-events:none;display:none;z-index:2}
 .status{font-size:12px;color:var(--muted);margin-top:9px;text-align:center}
 details{color:var(--muted);font-size:12px;line-height:1.7}
 summary{color:var(--text);font-weight:700;cursor:pointer}
@@ -177,9 +177,15 @@ function updateGuide(){
     const rect = line.getBoundingClientRect();
     if(rect.right > maxRight) maxRight = rect.right;
   });
+
   if(maxRight > 0){
     const leftPos = maxRight - wrapRect.left + previewWrap.scrollLeft;
+    const aaRect = aa.getBoundingClientRect();
+    const topPos = aaRect.top - wrapRect.top + previewWrap.scrollTop;
+
     guideLine.style.left = leftPos + "px";
+    guideLine.style.top = (topPos - 4) + "px";
+    guideLine.style.height = (aaRect.height + 8) + "px";
     guideLine.style.display = "block";
   }
 }
