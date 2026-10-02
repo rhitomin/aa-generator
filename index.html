@@ -29,8 +29,9 @@ button:active{transform:scale(.98);opacity:.85}
 input[type=range]{width:100%;accent-color:var(--accent)}
 select{width:100%;background:#0f0f14;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px}
 .preview-wrap{position:relative;background:#09090d;border:1px solid var(--line);border-radius:14px;padding:18px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-pre{margin:0;display:block;width:max-content;min-width:100%;text-align:left;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","SF Pro Text","Helvetica Neue",sans-serif;font-size:clamp(14px,4.3vw,21px);line-height:1.45;letter-spacing:0;white-space:pre;color:#fff;-webkit-font-smoothing:antialiased}
-.guide-line{position:absolute;top:0;bottom:0;width:1px;border-left:1px dashed #ff453a88;pointer-events:none;display:none}
+pre{margin:0;display:inline-block;width:max-content;min-width:auto;text-align:left;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","SF Pro Text","Helvetica Neue",sans-serif;font-size:clamp(14px,4.3vw,21px);line-height:1.45;letter-spacing:0;white-space:pre;color:#fff;-webkit-font-smoothing:antialiased}
+.aa-line{display:block;width:fit-content;white-space:pre}
+.guide-line{position:absolute;top:0;bottom:0;width:1px;border-left:1.5px dashed #ff453a;pointer-events:none;display:none;z-index:2}
 .status{font-size:12px;color:var(--muted);margin-top:9px;text-align:center}
 details{color:var(--muted);font-size:12px;line-height:1.7}
 summary{color:var(--text);font-weight:700;cursor:pointer}
@@ -97,7 +98,7 @@ const input=$("input"),aa=$("aa"),status=$("status"),pad=$("pad"),padOut=$("padO
 const STORAGE="aa-generator-left-aligned-v2";
 
 const measure=document.createElement("span");
-measure.style.cssText='position:absolute;left:-99999px;top:0;visibility:hidden;white-space:pre;font-size:20px;font-weight:400;line-height:1;letter-spacing:0';
+measure.style.cssText='position:absolute;left:-99999px;top:0;visibility:hidden;white-space:pre;font-weight:400;line-height:1;letter-spacing:0';
 document.body.appendChild(measure);
 
 function applyFont(type){
@@ -106,6 +107,8 @@ function applyFont(type){
     : '-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","SF Pro Text","Helvetica Neue",sans-serif';
   measure.style.fontFamily=f;
   aa.style.fontFamily=f;
+  const comp = window.getComputedStyle(aa);
+  measure.style.fontSize = comp.fontSize;
 }
 
 const px=t=>{measure.textContent=t||"";return measure.getBoundingClientRect().width};
@@ -158,16 +161,27 @@ function optimize(chars,forcedPad){
   return best;
 }
 
-function updateGuide(widthPx){
-  if(!showGuide.checked || !widthPx){
+function updateGuide(){
+  if(!showGuide.checked){
     guideLine.style.display="none";
     return;
   }
-  const preRect = aa.getBoundingClientRect();
+  const lines = aa.querySelectorAll(".aa-line");
+  if(!lines || lines.length === 0){
+    guideLine.style.display="none";
+    return;
+  }
   const wrapRect = previewWrap.getBoundingClientRect();
-  const leftOffset = preRect.left - wrapRect.left + previewWrap.scrollLeft;
-  guideLine.style.left = (leftOffset + widthPx) + "px";
-  guideLine.style.display = "block";
+  let maxRight = 0;
+  lines.forEach(line => {
+    const rect = line.getBoundingClientRect();
+    if(rect.right > maxRight) maxRight = rect.right;
+  });
+  if(maxRight > 0){
+    const leftPos = maxRight - wrapRect.left + previewWrap.scrollLeft;
+    guideLine.style.left = leftPos + "px";
+    guideLine.style.display = "block";
+  }
 }
 
 function render(save=true){
@@ -181,7 +195,7 @@ function render(save=true){
   const forced=v===0?null:v;
   const res=optimize(chars,forced);
 
-  aa.textContent=res.t+"\n"+res.mid+"\n"+res.b;
+  aa.innerHTML = `<span class="aa-line">${res.t}</span><span class="aa-line">${res.mid}</span><span class="aa-line">${res.b}</span>`;
 
   if(isPlaceholder){
     aa.style.opacity="0.32";
@@ -196,9 +210,7 @@ function render(save=true){
   fontOut.textContent=fontSelect.value==="mono"?"等幅":"iPhone標準";
 
   requestAnimationFrame(()=>{
-    const preW = Math.max(res.tw, res.mw, res.bw);
-    const scale = aa.getBoundingClientRect().width / (px(aa.textContent.split("\n")[0]) || 1);
-    updateGuide(preW * (scale || 1));
+    updateGuide();
   });
 
   if(save && !isPlaceholder){
@@ -211,7 +223,8 @@ function render(save=true){
 input.addEventListener("input",()=>render());
 pad.addEventListener("input",()=>render());
 fontSelect.addEventListener("change",()=>render());
-showGuide.addEventListener("change",()=>render(false));
+showGuide.addEventListener("change",()=>updateGuide());
+previewWrap.addEventListener("scroll",()=>updateGuide());
 
 $("clear").addEventListener("click",()=>{
   input.value="";
@@ -220,7 +233,13 @@ $("clear").addEventListener("click",()=>{
 });
 
 $("copy").addEventListener("click",async()=>{
-  const text = aa.textContent;
+  const lines = aa.querySelectorAll(".aa-line");
+  let text = "";
+  if(lines.length >= 3){
+    text = `${lines[0].textContent}\n${lines[1].textContent}\n${lines[2].textContent}`;
+  } else {
+    text = aa.textContent;
+  }
   try{
     await navigator.clipboard.writeText(text);
   }catch(e){
@@ -257,7 +276,9 @@ render(false);
 if(document.fonts&&document.fonts.ready){
   document.fonts.ready.then(()=>render(false));
 }
-window.addEventListener("resize",()=>render(false));
+window.addEventListener("resize",()=>{
+  render(false);
+});
 })();
 </script>
 </body>
