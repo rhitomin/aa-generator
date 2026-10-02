@@ -3,39 +3,241 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0b0f">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0b0f">
 <title>＿人人人人＿ AA変換ジェネレーター</title>
 <style>
-:root{color-scheme:dark;--bg:#0b0b0f;--panel:#15151b;--panel2:#1d1d25;--text:#f5f5f7;--muted:#a7a7b0;--line:#30303a;--accent:#7c9cff;--success:#34c759}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","SF Pro Text","Helvetica Neue",sans-serif}
-body{min-height:100vh;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
-main{max-width:760px;margin:auto;padding:24px 0 36px}
-h1{font-size:22px;line-height:1.25;margin:0 0 6px;font-weight:800;letter-spacing:-.02em}
-.sub{color:var(--muted);font-size:13px;margin-bottom:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.badge{display:inline-block;border:1px solid var(--line);padding:2px 8px;border-radius:999px;font-size:11px;color:var(--muted)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 8px 24px #00000030}
-label{display:block;font-size:13px;color:var(--muted);margin:0 0 8px;font-weight:700}
-textarea{width:100%;min-height:90px;resize:vertical;border:1px solid var(--line);border-radius:13px;background:#0f0f14;color:var(--text);padding:12px 14px;font:500 17px/1.5 inherit;outline:0;caret-color:var(--accent)}
-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #7c9cff22}
-.row{display:flex;gap:9px;margin-top:11px}
-button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:14px;cursor:pointer;background:var(--panel2);color:var(--text);-webkit-tap-highlight-color:transparent;transition:all .15s}
-button.primary{background:var(--accent);color:#07102b;flex:1}
-button:active{transform:scale(.98);opacity:.85}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.control{background:#101016;border:1px solid var(--line);border-radius:13px;padding:11px 12px}
-.control .top{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;margin-bottom:8px}
-.control output{color:var(--accent);font-variant-numeric:tabular-nums}
-input[type=range]{width:100%;accent-color:var(--accent)}
-select{width:100%;background:#0f0f14;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px}
-.preview-wrap{position:relative;background:#09090d;border:1px solid var(--line);border-radius:14px;padding:18px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-pre{margin:0;display:inline-block;width:max-content;min-width:auto;text-align:left;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","SF Pro Text","Helvetica Neue",sans-serif;font-size:clamp(14px,4.3vw,21px);line-height:1.45;letter-spacing:0;white-space:pre;color:#fff;-webkit-font-smoothing:antialiased}
-.aa-line{display:block;width:fit-content;white-space:pre}
-.guide-line{position:absolute;width:0;border-left:2px dashed #ff453a;pointer-events:none;display:none;z-index:2}
-.status{font-size:12px;color:var(--muted);margin-top:9px;text-align:center}
-details{color:var(--muted);font-size:12px;line-height:1.7}
-summary{color:var(--text);font-weight:700;cursor:pointer}
-@media(max-width:560px){.controls{grid-template-columns:1fr}.card{padding:14px}main{padding-top:18px}}
+:root {
+  color-scheme: light dark;
+  --bg: #0b0b0f;
+  --panel: #15151b;
+  --panel2: #1d1d25;
+  --text: #f5f5f7;
+  --muted: #a7a7b0;
+  --line: #30303a;
+  --accent: #7c9cff;
+  --success: #34c759;
+  --input-bg: #0f0f14;
+  --preview-bg: #09090d;
+  --pre-color: #ffffff;
+  --btn-text: #07102b;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f2f2f7;
+    --panel: #ffffff;
+    --panel2: #e5e5ea;
+    --text: #000000;
+    --muted: #8e8e93;
+    --line: #d1d1d6;
+    --accent: #007aff;
+    --success: #34c759;
+    --input-bg: #f8f8fa;
+    --preview-bg: #f5f5f9;
+    --pre-color: #1c1c1e;
+    --btn-text: #ffffff;
+    --shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+  }
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "SF Pro Text", "Helvetica Neue", sans-serif;
+  transition: background .25s ease, color .25s ease;
+}
+body {
+  min-height: 100vh;
+  padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+}
+main {
+  max-width: 760px;
+  margin: auto;
+  padding: 24px 0 36px;
+}
+h1 {
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 0 0 6px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+.sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.badge {
+  display: inline-block;
+  border: 1px solid var(--line);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--input-bg);
+  color: var(--text);
+  padding: 12px 14px;
+  font: 500 17px/1.5 inherit;
+  outline: 0;
+  caret-color: var(--accent);
+  transition: background .25s ease, border-color .25s ease, color .25s ease;
+}
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124, 156, 255, 0.25);
+}
+.row {
+  display: flex;
+  gap: 9px;
+  margin-top: 11px;
+}
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  background: var(--panel2);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  transition: all .15s ease;
+}
+button.primary {
+  background: var(--accent);
+  color: var(--btn-text);
+  flex: 1;
+}
+button:active {
+  transform: scale(.98);
+  opacity: .85;
+}
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.control {
+  background: var(--input-bg);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 11px 12px;
+  transition: background .25s ease, border-color .25s ease;
+}
+.control .top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.control output {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+input[type=range] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+select {
+  width: 100%;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 8px 10px;
+  font-size: 16px; /* iOS Safariでタップ時に勝手に画面がズームする現象を完全防止 */
+}
+.preview-wrap {
+  position: relative;
+  background: var(--preview-bg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  transition: background .25s ease, border-color .25s ease;
+}
+pre {
+  margin: 0;
+  display: inline-block;
+  width: max-content;
+  min-width: auto;
+  text-align: left;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "SF Pro Text", "Helvetica Neue", sans-serif;
+  font-size: clamp(14px, 4.3vw, 21px);
+  line-height: 1.45;
+  letter-spacing: 0;
+  white-space: pre;
+  color: var(--pre-color);
+  -webkit-font-smoothing: antialiased;
+}
+.aa-line {
+  display: block;
+  width: fit-content;
+  white-space: pre;
+}
+.guide-line {
+  position: absolute;
+  width: 0;
+  border-left: 2px dashed #ff453a;
+  pointer-events: none;
+  display: none;
+  z-index: 2;
+}
+.status {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 9px;
+  text-align: center;
+}
+details {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+summary {
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
+@media (max-width: 560px) {
+  .controls { grid-template-columns: 1fr; }
+  .card { padding: 14px; }
+  main { padding-top: 18px; }
+}
 </style>
 </head>
 <body>
@@ -56,7 +258,7 @@ summary{color:var(--text);font-weight:700;cursor:pointer}
 <div class="controls">
 <div class="control">
 <div class="top"><span>左右の余白</span><output id="padOut">自動</output></div>
-<input id="pad" type="range" min="0" max="4" step="1" value="1">
+<input id="pad" type="range" min="0" max="4" step="1" value="0">
 </div>
 <div class="control">
 <div class="top"><span>対象環境フォント</span><output id="fontOut">iPhone標準</output></div>
@@ -94,11 +296,14 @@ LINEやTwitter（X）、メモ帳などは「左揃え」で表示されます�
 <script>
 (()=> {
 const $=id=>document.getElementById(id);
-const input=$("input"),aa=$("aa"),status=$("status"),pad=$("pad"),padOut=$("padOut"),fontSelect=$("fontSelect"),fontOut=$("fontOut"),guideLine=$("guideLine"),showGuide=$("showGuide"),previewWrap=$("previewWrap");
-const STORAGE="aa-generator-left-aligned-v2";
+const input=$("input"),aa=$("aa"),status=$("status"),pad=$("pad"),padOut=$("padOut"),fontSelect=$("fontSelect"),fontOut=$("fontOut"),guideLine=$("guideLine"),showGuide=$("showGuide"),previewWrap=$("previewWrap"),copyBtn=$("copy");
+const STORAGE="aa-generator-left-aligned-v3";
+let copyTimer = null;
+let currentAAText = "";
 
+// 幅実測用の隠し要素（プレビューと完全に同一のフォント・アンチエイリアス設定を適用）
 const measure=document.createElement("span");
-measure.style.cssText='position:absolute;left:-99999px;top:0;visibility:hidden;white-space:pre;font-weight:400;line-height:1;letter-spacing:0';
+measure.style.cssText='position:absolute;left:-99999px;top:0;visibility:hidden;white-space:pre;font-weight:400;line-height:1;letter-spacing:0;-webkit-font-smoothing:antialiased;';
 document.body.appendChild(measure);
 
 function applyFont(type){
@@ -120,8 +325,8 @@ const top=n=>"＿"+"人".repeat(n)+"＿";
 const bottom=(m,tail)=>"￣"+"^Y".repeat(m)+(tail?"^":"")+"￣";
 
 function optimize(chars,forcedPad){
+  // forcedPad: null（自動探索 0〜3）または固定値（0, 1, 2, 3）
   const pads=forcedPad===null?[0,1,2,3]:[forcedPad];
-  const core=chars.length?chars.join("　"):"";
   let best=null;
   const personW=Math.max(px("人"),0.001);
 
@@ -179,9 +384,11 @@ function updateGuide(){
   });
 
   if(maxRight > 0){
-    const leftPos = maxRight - wrapRect.left + previewWrap.scrollLeft;
+    const borderLeft = previewWrap.clientLeft || 0;
+    const borderTop = previewWrap.clientTop || 0;
+    const leftPos = maxRight - wrapRect.left - borderLeft + previewWrap.scrollLeft;
     const aaRect = aa.getBoundingClientRect();
-    const topPos = aaRect.top - wrapRect.top + previewWrap.scrollTop;
+    const topPos = aaRect.top - wrapRect.top - borderTop + previewWrap.scrollTop;
 
     guideLine.style.left = leftPos + "px";
     guideLine.style.top = (topPos - 4) + "px";
@@ -198,22 +405,25 @@ function render(save=true){
 
   const chars=graphemes(targetText);
   const v=Number(pad.value);
-  const forced=v===0?null:v;
-  const res=optimize(chars,forced);
+  // v=0: 自動, v=1: 0文字(なし), v=2: 1文字, v=3: 2文字, v=4: 3文字
+  const forcedPad = v === 0 ? null : (v - 1);
+  const res=optimize(chars,forcedPad);
 
+  currentAAText = `${res.t}\n${res.mid}\n${res.b}`;
   aa.innerHTML = `<span class="aa-line">${res.t}</span><span class="aa-line">${res.mid}</span><span class="aa-line">${res.b}</span>`;
 
   if(isPlaceholder){
     aa.style.opacity="0.32";
-    status.textContent="例：ラーメン（入力すると自動計算されます）";
+    status.textContent="例：ラーメン（文字を入力すると自動計算されます）";
   }else{
     aa.style.opacity="1";
     const errRounded = Math.round(res.maxDiff * 10) / 10;
     status.textContent=`${chars.length}文字 ｜ 上 人×${res.n} ｜ 下 ^Y×${res.m}${res.tail?"+^":""} ｜ 最大誤差 約${errRounded}px`;
   }
 
-  padOut.textContent=forced===null?"自動":`${forced}文字分`;
-  fontOut.textContent=fontSelect.value==="mono"?"等幅":"iPhone標準";
+  const padLabels = ["自動", "なし (0文字)", "1文字分", "2文字分", "3文字分"];
+  padOut.textContent = padLabels[v] || "自動";
+  fontOut.textContent = fontSelect.value==="mono" ? "等幅" : "iPhone標準";
 
   requestAnimationFrame(()=>{
     updateGuide();
@@ -238,14 +448,8 @@ $("clear").addEventListener("click",()=>{
   input.focus();
 });
 
-$("copy").addEventListener("click",async()=>{
-  const lines = aa.querySelectorAll(".aa-line");
-  let text = "";
-  if(lines.length >= 3){
-    text = `${lines[0].textContent}\n${lines[1].textContent}\n${lines[2].textContent}`;
-  } else {
-    text = aa.textContent;
-  }
+copyBtn.addEventListener("click",async()=>{
+  const text = currentAAText || aa.textContent;
   try{
     await navigator.clipboard.writeText(text);
   }catch(e){
@@ -257,21 +461,23 @@ $("copy").addEventListener("click",async()=>{
     document.execCommand("copy");
     ta.remove();
   }
-  const orig=$("copy").textContent;
-  $("copy").textContent="コピー完了！ ✓";
-  $("copy").style.background="var(--success)";
-  $("copy").style.color="#fff";
-  setTimeout(()=>{
-    $("copy").textContent=orig;
-    $("copy").style.background="var(--accent)";
-    $("copy").style.color="#07102b";
+
+  if(copyTimer) clearTimeout(copyTimer);
+  copyBtn.textContent="コピー完了！ ✓";
+  copyBtn.style.background="var(--success)";
+  copyBtn.style.color="#fff";
+
+  copyTimer = setTimeout(()=>{
+    copyBtn.textContent="AAをコピー";
+    copyBtn.style.background="var(--accent)";
+    copyBtn.style.color="var(--btn-text)";
   }, 1200);
 });
 
 try{
   const s=JSON.parse(localStorage.getItem(STORAGE)||"null");
   if(s){
-    pad.value=s.pad??"1";
+    pad.value=s.pad??"0";
     fontSelect.value=s.font??"system";
   }
 }catch(e){}
@@ -283,6 +489,11 @@ if(document.fonts&&document.fonts.ready){
   document.fonts.ready.then(()=>render(false));
 }
 window.addEventListener("resize",()=>{
+  render(false);
+});
+
+// OSの外観モード切り替え時にもガイドとサイズを再計算
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
   render(false);
 });
 })();
