@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0f">
+<title>＿人人人人＿ AA変換ジェネレーター</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0b0f;--panel:#15151b;--panel2:#1d1d25;--text:#f5f5f7;--muted:#a7a7b0;--line:#30303a;--accent:#7c9cff;--success:#34c759}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","SF Pro Text","Helvetica Neue",sans-serif}
+body{min-height:100vh;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
+main{max-width:760px;margin:auto;padding:24px 0 36px}
+h1{font-size:22px;line-height:1.25;margin:0 0 6px;font-weight:800;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:13px;margin-bottom:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{display:inline-block;border:1px solid var(--line);padding:2px 8px;border-radius:999px;font-size:11px;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 8px 24px #00000030}
+label{display:block;font-size:13px;color:var(--muted);margin:0 0 8px;font-weight:700}
+textarea{width:100%;min-height:90px;resize:vertical;border:1px solid var(--line);border-radius:13px;background:#0f0f14;color:var(--text);padding:12px 14px;font:500 17px/1.5 inherit;outline:0;caret-color:var(--accent)}
+textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #7c9cff22}
+.row{display:flex;gap:9px;margin-top:11px}
+button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:14px;cursor:pointer;background:var(--panel2);color:var(--text);-webkit-tap-highlight-color:transparent;transition:all .15s}
+button.primary{background:var(--accent);color:#07102b;flex:1}
+button:active{transform:scale(.98);opacity:.85}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.control{background:#101016;border:1px solid var(--line);border-radius:13px;padding:11px 12px}
+.control .top{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;margin-bottom:8px}
+.control output{color:var(--accent);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+select{width:100%;background:#0f0f14;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px}
+.preview-wrap{position:relative;background:#09090d;border:1px solid var(--line);border-radius:14px;padding:18px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+pre{margin:0;display:block;width:max-content;min-width:100%;text-align:left;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","SF Pro Text","Helvetica Neue",sans-serif;font-size:clamp(14px,4.3vw,21px);line-height:1.45;letter-spacing:0;white-space:pre;color:#fff;-webkit-font-smoothing:antialiased}
+.guide-line{position:absolute;top:0;bottom:0;width:1px;border-left:1px dashed #ff453a88;pointer-events:none;display:none}
+.status{font-size:12px;color:var(--muted);margin-top:9px;text-align:center}
+details{color:var(--muted);font-size:12px;line-height:1.7}
+summary{color:var(--text);font-weight:700;cursor:pointer}
+@media(max-width:560px){.controls{grid-template-columns:1fr}.card{padding:14px}main{padding-top:18px}}
+</style>
+</head>
+<body>
+<main>
+<h1>＿人人人人＿ AA変換ジェネレーター</h1>
+<div class="sub">iPhone表示を基準に、横幅を実測して自動調整します <span class="badge">完全ブラウザ処理</span></div>
+
+<section class="card">
+<label for="input">文字を入力</label>
+<textarea id="input" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="例：ラーメン"></textarea>
+<div class="row">
+<button id="copy" class="primary">AAをコピー</button>
+<button id="clear">クリア</button>
+</div>
+</section>
+
+<section class="card">
+<div class="controls">
+<div class="control">
+<div class="top"><span>左右の余白</span><output id="padOut">自動</output></div>
+<input id="pad" type="range" min="0" max="4" step="1" value="1">
+</div>
+<div class="control">
+<div class="top"><span>対象環境フォント</span><output id="fontOut">iPhone標準</output></div>
+<select id="fontSelect">
+<option value="system">iPhone標準（SNS・メモ帳・LINE）</option>
+<option value="mono">等幅フォント（SF Mono / PC）</option>
+</select>
+</div>
+</div>
+</section>
+
+<section class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<label style="margin:0">プレビュー（左揃え）</label>
+<label style="font-size:11px;font-weight:normal;cursor:pointer;color:var(--muted)"><input type="checkbox" id="showGuide" style="vertical-align:-1px;margin-right:4px">右端ガイド線</label>
+</div>
+<div class="preview-wrap" id="previewWrap">
+<pre id="aa"></pre>
+<div class="guide-line" id="guideLine"></div>
+</div>
+<div class="status" id="status"></div>
+</section>
+
+<section class="card">
+<details>
+<summary>左揃え最適化アルゴリズムについて</summary>
+<p style="margin:8px 0 0">
+LINEやTwitter（X）、メモ帳などは「左揃え」で表示されます。従来のAAは中央揃えや単純な文字数換算で作られていたため、貼り付けた際に右端がガタガタになっていました。<br>
+本ツールは、1行目（＿）、2行目（＞）、3行目（￣）の左端が揃う前提で、ブラウザ上の実際のフォント描画幅（ピクセル単位）をリアルタイム実測。「人」の個数と下部のギザギザ（^Yおよび末尾微調整）を総当たり探索し、<strong>3行の右端が最も綺麗に一直線に揃う組み合わせ</strong>を自動算出します。
+</p>
+</details>
+</section>
+</main>
+
+<script>
+(()=> {
+const $=id=>document.getElementById(id);
+const input=$("input"),aa=$("aa"),status=$("status"),pad=$("pad"),padOut=$("padOut"),fontSelect=$("fontSelect"),fontOut=$("fontOut"),guideLine=$("guideLine"),showGuide=$("showGuide"),previewWrap=$("previewWrap");
+const STORAGE="aa-generator-left-aligned-v2";
+
+const measure=document.createElement("span");
+measure.style.cssText='position:absolute;left:-99999px;top:0;visibility:hidden;white-space:pre;font-size:20px;font-weight:400;line-height:1;letter-spacing:0';
+document.body.appendChild(measure);
+
+function applyFont(type){
+  const f = type==="mono"
+    ? '"SF Mono","Menlo","Monaco","Cascadia Mono","Roboto Mono",ui-monospace,monospace'
+    : '-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","SF Pro Text","Helvetica Neue",sans-serif';
+  measure.style.fontFamily=f;
+  aa.style.fontFamily=f;
+}
+
+const px=t=>{measure.textContent=t||"";return measure.getBoundingClientRect().width};
+function graphemes(s){return window.Intl&&Intl.Segmenter?[...new Intl.Segmenter("ja",{granularity:"grapheme"}).segment(s)].map(x=>x.segment):Array.from(s)}
+const clean=s=>s.replace(/[\r\n]+/g," ").trim();
+
+const middle=(c,l,r)=>"＞"+"　".repeat(l)+c.join("　")+"　".repeat(r)+"＜";
+const top=n=>"＿"+"人".repeat(n)+"＿";
+const bottom=(m,tail)=>"￣"+"^Y".repeat(m)+(tail?"^":"")+"￣";
+
+function optimize(chars,forcedPad){
+  const pads=forcedPad===null?[0,1,2,3]:[forcedPad];
+  const core=chars.length?chars.join("　"):"";
+  let best=null;
+  const personW=Math.max(px("人"),0.001);
+
+  for(const l of pads){
+    for(const r of [l]){
+      const mid=middle(chars,l,r);
+      const mw=px(mid);
+      const estN=Math.round((mw - px("＿＿")) / personW);
+      const minN=Math.max(1, estN - 4);
+      const maxN=estN + 4;
+
+      for(let n=minN; n<=maxN; n++){
+        const t=top(n);
+        const tw=px(t);
+        const yW=Math.max(px("^Y"),0.001);
+        const estM=Math.round((mw - px("￣￣")) / yW);
+
+        for(let m=Math.max(1, estM - 4); m<=estM + 4; m++){
+          for(const tail of [false, true]){
+            const b=bottom(m, tail);
+            const bw=px(b);
+
+            const diffTM = Math.abs(tw - mw);
+            const diffBM = Math.abs(bw - mw);
+            const diffTB = Math.abs(tw - bw);
+            const maxDiff = Math.max(diffTM, diffBM, diffTB);
+            const score = maxDiff * 2.0 + (diffTM + diffBM + diffTB) * 0.5 + (l * 0.05);
+
+            if(!best || score < best.score){
+              best={n, m, tail, l, r, mid, t, b, mw, tw, bw, maxDiff, score};
+            }
+          }
+        }
+      }
+    }
+  }
+  return best;
+}
+
+const PLACEHOLDER_TEXT="＿人人人人人人＿\n＞　ラ　ー　メ　ン　＜\n￣^Y^Y^Y^Y^Y^Y^Y￣";
+
+function updateGuide(widthPx){
+  if(!showGuide.checked || !widthPx){
+    guideLine.style.display="none";
+    return;
+  }
+  const preRect = aa.getBoundingClientRect();
+  const wrapRect = previewWrap.getBoundingClientRect();
+  const leftOffset = preRect.left - wrapRect.left + previewWrap.scrollLeft;
+  guideLine.style.left = (leftOffset + widthPx) + "px";
+  guideLine.style.display = "block";
+}
+
+function render(save=true){
+  applyFont(fontSelect.value);
+  const raw=clean(input.value);
+
+  if(!raw){
+    aa.style.opacity="0.32";
+    aa.textContent="＿人人人人人人＿\n＞　ラ　ー　メ　ン　＜\n￣^Y^Y^Y^Y^Y^Y^Y￣";
+    status.textContent="文字を入力すると自動計算されます";
+    guideLine.style.display="none";
+    return;
+  }
+
+  const chars=graphemes(raw);
+  const v=Number(pad.value);
+  const forced=v===0?null:v;
+  const res=optimize(chars,forced);
+
+  aa.style.opacity="1";
+  aa.textContent=res.t+"\n"+res.mid+"\n"+res.b;
+
+  const errRounded = Math.round(res.maxDiff * 10) / 10;
+  status.textContent=`${chars.length}文字 ｜ 上 人×${res.n} ｜ 下 ^Y×${res.m}${res.tail?"+^":""} ｜ 最大誤差 約${errRounded}px`;
+  padOut.textContent=forced===null?"自動":`${forced}文字分`;
+  fontOut.textContent=fontSelect.value==="mono"?"等幅":"iPhone標準";
+
+  requestAnimationFrame(()=>{
+    const preW = Math.max(res.tw, res.mw, res.bw);
+    const scale = aa.getBoundingClientRect().width / (px(aa.textContent.split("\n")[0]) || 1);
+    updateGuide(preW * (scale || 1));
+  });
+
+  if(save){
+    try{
+      localStorage.setItem(STORAGE, JSON.stringify({pad:pad.value, font:fontSelect.value}));
+    }catch(e){}
+  }
+}
+
+input.addEventListener("input",()=>render());
+pad.addEventListener("input",()=>render());
+fontSelect.addEventListener("change",()=>render());
+showGuide.addEventListener("change",()=>render(false));
+
+$("clear").addEventListener("click",()=>{
+  input.value="";
+  render();
+  input.focus();
+});
+
+$("copy").addEventListener("click",async()=>{
+  const raw=clean(input.value);
+  const text=raw ? aa.textContent : "＿人人人人人人＿\n＞　ラ　ー　メ　ン　＜\n￣^Y^Y^Y^Y^Y^Y^Y￣";
+  try{
+    await navigator.clipboard.writeText(text);
+  }catch(e){
+    const ta=document.createElement("textarea");
+    ta.value=text;
+    ta.style.cssText="position:fixed;opacity:0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+  const orig=$("copy").textContent;
+  $("copy").textContent="コピー完了！ ✓";
+  $("copy").style.background="var(--success)";
+  $("copy").style.color="#fff";
+  setTimeout(()=>{
+    $("copy").textContent=orig;
+    $("copy").style.background="var(--accent)";
+    $("copy").style.color="#07102b";
+  }, 1200);
+});
+
+try{
+  const s=JSON.parse(localStorage.getItem(STORAGE)||"null");
+  if(s){
+    pad.value=s.pad??"1";
+    fontSelect.value=s.font??"system";
+  }
+}catch(e){}
+
+input.value="";
+render(false);
+
+if(document.fonts&&document.fonts.ready){
+  document.fonts.ready.then(()=>render(false));
+}
+window.addEventListener("resize",()=>render(false));
+})();
+</script>
+</body>
+</html>
